@@ -65,17 +65,40 @@ func CompressGene(s string) (bitField, error) {
 	}
 
 	return rv, nil
+}
 
+func DecompressGene(b bitField) string {
+	rv := ""
+
+	h := map[int]string{
+		0: "A",
+		1: "G",
+		2: "C",
+		3: "T",
+	}
+
+	for i := 0; i < b.num_bits; i += 2 {
+		word := i / 64
+		shift := i % 64
+
+		v := int(b.bits[word]>>shift) & 3
+
+		rv += h[v]
+	}
+	return rv
 }
 
 func main() {
-	s := "acgtACGT"
+	s := "acgtACGTaaaaGGGGTTgtacaggggAAAATgacT"
 
 	s_comp, err := CompressGene(s)
 
 	if err != nil {
 		fmt.Println(err)
 	} else {
+		fmt.Println(s)
 		fmt.Println(s_comp)
+		s2 := DecompressGene(s_comp)
+		fmt.Println(s2)
 	}
 }
