@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"classic_sc/stack"
+	"fmt"
 )
 
 func main() {
@@ -20,5 +19,4 @@ func main() {
 		}
 		fmt.Println(val)
 	}
-
 }
