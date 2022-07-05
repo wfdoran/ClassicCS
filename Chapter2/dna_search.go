@@ -56,6 +56,15 @@ func string_to_gene(s string) Gene {
 	return gene
 }
 
+func linear_contains(gene Gene, key Codon) bool {
+	for _, c := range gene {
+		if c == key {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	// A nucleotide
 	fmt.Println(A)
@@ -68,4 +77,7 @@ func main() {
 	s := "ACGTGGCTCTCTAACGTAGG"
 	gene := string_to_gene(s)
 	fmt.Println(gene)
+
+	fmt.Println(linear_contains(gene, Codon{G, T, A}))
+	fmt.Println(linear_contains(gene, Codon{G, G, G}))
 }
