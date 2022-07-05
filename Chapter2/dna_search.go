@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 type Nucleotide int
 
@@ -56,6 +59,19 @@ func string_to_gene(s string) Gene {
 	return gene
 }
 
+func codonLess(a Codon, b Codon) bool {
+	for k := 0; k < 3; k++ {
+		if a[k] < b[k] {
+			return true
+		}
+		if a[k] > b[k] {
+			return false
+		}
+	}
+	return false
+
+}
+
 func linear_contains(gene Gene, key Codon) bool {
 	for _, c := range gene {
 		if c == key {
@@ -63,6 +79,37 @@ func linear_contains(gene Gene, key Codon) bool {
 		}
 	}
 	return false
+}
+
+func binary_contains(gene Gene, key Codon) bool {
+	lo := -1
+	hi := len(gene)
+
+	for hi-lo > 1 {
+		mid := (hi + lo) / 2
+		if gene[mid] == key {
+			return true
+		}
+		if codonLess(gene[mid], key) {
+			lo = mid
+		} else {
+			hi = mid
+		}
+	}
+	return false
+}
+
+func (gene Gene) Len() int {
+	return len(gene)
+}
+
+func (gene Gene) Less(i, j int) bool {
+	return codonLess(gene[i], gene[j])
+
+}
+
+func (gene Gene) Swap(i, j int) {
+	gene[i], gene[j] = gene[j], gene[i]
 }
 
 func main() {
@@ -80,4 +127,10 @@ func main() {
 
 	fmt.Println(linear_contains(gene, Codon{G, T, A}))
 	fmt.Println(linear_contains(gene, Codon{G, G, G}))
+
+	sort.Sort(gene)
+	fmt.Println(gene)
+	fmt.Println(binary_contains(gene, Codon{G, T, A}))
+	fmt.Println(binary_contains(gene, Codon{G, G, G}))
+
 }
