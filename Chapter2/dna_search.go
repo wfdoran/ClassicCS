@@ -72,8 +72,8 @@ func codonLess(a Codon, b Codon) bool {
 
 }
 
-func linear_contains(gene Gene, key Codon) bool {
-	for _, c := range gene {
+func linear_contains[T comparable](a []T, key T) bool {
+	for _, c := range a {
 		if c == key {
 			return true
 		}
@@ -132,5 +132,4 @@ func main() {
 	fmt.Println(gene)
 	fmt.Println(binary_contains(gene, Codon{G, T, A}))
 	fmt.Println(binary_contains(gene, Codon{G, G, G}))
-
 }
