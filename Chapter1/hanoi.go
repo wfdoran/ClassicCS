@@ -17,19 +17,21 @@ func hanoi_move(src *stack.Stack[int], dst *stack.Stack[int], scratch *stack.Sta
 }
 
 func main() {
-	s := stack.New[int]()
+	/*
+		s := stack.New[int]()
 
-	for i := 1; i <= 10; i++ {
-		s.Push(i * i)
-	}
-
-	for {
-		val, ok := s.Pop()
-		if !ok {
-			break
+		for i := 1; i <= 10; i++ {
+			s.Push(i * i)
 		}
-		fmt.Println(val)
-	}
+
+		for {
+			val, ok := s.Pop()
+			if !ok {
+				break
+			}
+			fmt.Println(val)
+		}
+	*/
 
 	num_discs := 3
 	tower_a := stack.New[int]()
