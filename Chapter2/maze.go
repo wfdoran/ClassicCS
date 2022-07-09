@@ -93,6 +93,39 @@ func (m Maze) SetStart(start MazeLocation) {
 	m.grid[start.row][start.col] = Start
 }
 
+func (m Maze) GoalTest(x MazeLocation) bool {
+	return m.grid[x.row][x.col] == Goal
+}
+
+func (m Maze) Successors(x MazeLocation) []MazeLocation {
+	var locations []MazeLocation
+	delta := [4][2]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+
+	for _, d := range delta {
+		new_row := x.row + d[0]
+		new_col := x.col + d[1]
+
+		if new_row >= 0 && new_row < m.num_rows && new_col >= 0 && new_col < m.num_cols {
+			if m.grid[new_row][new_col] != Blocked {
+				locations = append(locations, MazeLocation{new_row, new_col})
+			}
+		}
+	}
+
+	return locations
+}
+
+func (m Maze) GetStart() MazeLocation {
+	for r := 0; r < m.num_rows; r++ {
+		for c := 0; c < m.num_cols; c++ {
+			if m.grid[r][c] == Start {
+				return MazeLocation{r, c}
+			}
+		}
+	}
+	return MazeLocation{-1, -1}
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
@@ -102,4 +135,10 @@ func main() {
 	m.SetStart(MazeLocation{0, 0})
 	m.SetGoal(MazeLocation{num_rows - 1, num_cols - 1})
 	fmt.Println(m)
+
+	fmt.Println(m.GoalTest(MazeLocation{5, 5}), m.GoalTest(MazeLocation{num_rows - 1, num_cols - 1}))
+
+	start := m.GetStart()
+	nbrs := m.Successors(start)
+	fmt.Println(nbrs)
 }
