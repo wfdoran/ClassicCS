@@ -1,6 +1,7 @@
 package main
 
 import (
+	"classic_sc/stack"
 	"fmt"
 	"math/rand"
 	"time"
@@ -126,6 +127,59 @@ func (m Maze) GetStart() MazeLocation {
 	return MazeLocation{-1, -1}
 }
 
+type Node[T any] struct {
+	state     T
+	parent    *Node[T]
+	cost      float64
+	heuristic float64
+}
+
+func (m Maze) dfs() *Node[MazeLocation] {
+	start := m.GetStart()
+	startNode := Node[MazeLocation]{start, nil, 0.0, 0.0}
+
+	frontier := stack.New[Node[MazeLocation]]()
+	frontier.Push(startNode)
+
+	explored := make(map[MazeLocation]bool)
+	explored[start] = true
+
+	for {
+		curr, ok := frontier.Pop()
+		if !ok {
+			return nil
+		}
+
+		if m.GoalTest(curr.state) {
+			return &curr
+		}
+
+		for _, nbr := range m.Successors(curr.state) {
+			_, ok := explored[nbr]
+
+			if !ok {
+				nbrNode := Node[MazeLocation]{nbr, &curr, curr.cost + 1.0, 0.0}
+				frontier.Push(nbrNode)
+				explored[nbr] = true
+			}
+		}
+	}
+}
+
+func (m *Maze) MarkPath(node *Node[MazeLocation]) {
+	curr := node
+
+	for curr != nil {
+		r := curr.state.row
+		c := curr.state.col
+
+		if m.grid[r][c] == Empty {
+			m.grid[r][c] = Path
+		}
+		curr = curr.parent
+	}
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
@@ -141,4 +195,12 @@ func main() {
 	start := m.GetStart()
 	nbrs := m.Successors(start)
 	fmt.Println(nbrs)
+
+	t := m.dfs()
+
+	if t != nil {
+		fmt.Println("cost = ", t.cost)
+		m.MarkPath(t)
+		fmt.Println(m)
+	}
 }
