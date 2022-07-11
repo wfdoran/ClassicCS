@@ -23,3 +23,15 @@ func (s *Stack[T]) Pop() (T, bool) {
 		return val, false
 	}
 }
+
+func (s *Stack[T]) PopFirst() (T, bool) {
+	var val T
+	n := len(s.vals)
+	if n > 0 {
+		val = s.vals[0]
+		s.vals = s.vals[1:]
+		return val, true
+	} else {
+		return val, false
+	}
+}

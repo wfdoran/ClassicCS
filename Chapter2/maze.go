@@ -166,6 +166,48 @@ func (m Maze) dfs() *Node[MazeLocation] {
 	}
 }
 
+func (m Maze) bfs() *Node[MazeLocation] {
+	start := m.GetStart()
+	startNode := Node[MazeLocation]{start, nil, 0.0, 0.0}
+
+	frontier := stack.New[Node[MazeLocation]]()
+	frontier.Push(startNode)
+
+	explored := make(map[MazeLocation]bool)
+	explored[start] = true
+
+	for {
+		curr, ok := frontier.PopFirst()
+		if !ok {
+			return nil
+		}
+
+		if m.GoalTest(curr.state) {
+			return &curr
+		}
+
+		for _, nbr := range m.Successors(curr.state) {
+			_, ok := explored[nbr]
+
+			if !ok {
+				nbrNode := Node[MazeLocation]{nbr, &curr, curr.cost + 1.0, 0.0}
+				frontier.Push(nbrNode)
+				explored[nbr] = true
+			}
+		}
+	}
+}
+
+func (m *Maze) ClearPath() {
+	for r := 0; r < m.num_rows; r++ {
+		for c := 0; c < m.num_cols; c++ {
+			if m.grid[r][c] == Path {
+				m.grid[r][c] = Empty
+			}
+		}
+	}
+}
+
 func (m *Maze) MarkPath(node *Node[MazeLocation]) {
 	curr := node
 
@@ -185,7 +227,8 @@ func main() {
 
 	num_rows := 10
 	num_cols := 10
-	m := InitMaze(num_rows, num_cols, .2)
+	sparseness := .2
+	m := InitMaze(num_rows, num_cols, sparseness)
 	m.SetStart(MazeLocation{0, 0})
 	m.SetGoal(MazeLocation{num_rows - 1, num_cols - 1})
 	fmt.Println(m)
@@ -203,4 +246,14 @@ func main() {
 		m.MarkPath(t)
 		fmt.Println(m)
 	}
+	m.ClearPath()
+
+	t = m.bfs()
+
+	if t != nil {
+		fmt.Println("cost = ", t.cost)
+		m.MarkPath(t)
+		fmt.Println(m)
+	}
+
 }
