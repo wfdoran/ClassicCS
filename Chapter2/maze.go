@@ -1,8 +1,10 @@
 package main
 
 import (
+	"classic_sc/heap"
 	"classic_sc/stack"
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -127,11 +129,38 @@ func (m Maze) GetStart() MazeLocation {
 	return MazeLocation{-1, -1}
 }
 
+func (m Maze) GetGoal() MazeLocation {
+	for r := 0; r < m.num_rows; r++ {
+		for c := 0; c < m.num_cols; c++ {
+			if m.grid[r][c] == Goal {
+				return MazeLocation{r, c}
+			}
+		}
+	}
+	return MazeLocation{-1, -1}
+}
+
 type Node[T any] struct {
 	state     T
 	parent    *Node[T]
 	cost      float64
 	heuristic float64
+}
+
+func EucleanDistance(a MazeLocation, b MazeLocation) float64 {
+	delta_row := float64(a.row - b.row)
+	delta_col := float64(a.col - b.col)
+	return math.Sqrt(delta_row*delta_row + delta_col*delta_col)
+}
+
+func ManhattanDistance(a MazeLocation, b MazeLocation) float64 {
+	delta_row := float64(a.row - b.row)
+	delta_col := float64(a.col - b.col)
+	return math.Abs(delta_row) + math.Abs(delta_col)
+}
+
+func (node Node[MazeLocation]) Score() float64 {
+	return -(node.cost + node.heuristic)
 }
 
 func (m Maze) dfs() *Node[MazeLocation] {
@@ -198,6 +227,42 @@ func (m Maze) bfs() *Node[MazeLocation] {
 	}
 }
 
+func (m Maze) a_star() *Node[MazeLocation] {
+	// dist_func := ManhattanDistance
+	dist_func := EucleanDistance
+	goal := m.GetGoal()
+
+	start := m.GetStart()
+	startNode := Node[MazeLocation]{start, nil, 0.0, dist_func(start, goal)}
+
+	frontier := heap.New[Node[MazeLocation]]()
+	frontier.Push(startNode)
+
+	explored := make(map[MazeLocation]bool)
+	explored[start] = true
+
+	for {
+		curr, ok := frontier.Pop()
+		if !ok {
+			return nil
+		}
+
+		if m.GoalTest(curr.state) {
+			return &curr
+		}
+
+		for _, nbr := range m.Successors(curr.state) {
+			_, ok := explored[nbr]
+
+			if !ok {
+				nbrNode := Node[MazeLocation]{nbr, &curr, curr.cost + 1.0, dist_func(nbr, goal)}
+				frontier.Push(nbrNode)
+				explored[nbr] = true
+			}
+		}
+	}
+}
+
 func (m *Maze) ClearPath() {
 	for r := 0; r < m.num_rows; r++ {
 		for c := 0; c < m.num_cols; c++ {
@@ -255,5 +320,13 @@ func main() {
 		m.MarkPath(t)
 		fmt.Println(m)
 	}
+	m.ClearPath()
 
+	t = m.a_star()
+
+	if t != nil {
+		fmt.Println("cost = ", t.cost)
+		m.MarkPath(t)
+		fmt.Println(m)
+	}
 }

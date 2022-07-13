@@ -3,6 +3,7 @@ package main
 import (
 	"classic_sc/heap"
 	"fmt"
+	"math/rand"
 )
 
 type Pair struct {
@@ -19,12 +20,10 @@ func (p Pair) Score() float64 {
 func main() {
 	h := heap.New[Pair]()
 
-	h.Push(Pair{1, 2})
-	h.Push(Pair{2, 1})
-	h.Push(Pair{4, 0})
-	h.Push(Pair{1, 1})
-
-	fmt.Println(h)
+	for i := 0; i < 20; i++ {
+		p := Pair{rand.Intn(100), rand.Intn(100)}
+		h.Push(p)
+	}
 
 	for {
 		v, ok := h.Pop()
@@ -33,5 +32,4 @@ func main() {
 		}
 		fmt.Println(v, v.Score())
 	}
-
 }
