@@ -163,7 +163,7 @@ func (node Node[MazeLocation]) Score() float64 {
 	return -(node.cost + node.heuristic)
 }
 
-func (m Maze) dfs() *Node[MazeLocation] {
+func (m Maze) dfs() (*Node[MazeLocation], int) {
 	start := m.GetStart()
 	startNode := Node[MazeLocation]{start, nil, 0.0, 0.0}
 
@@ -176,11 +176,11 @@ func (m Maze) dfs() *Node[MazeLocation] {
 	for {
 		curr, ok := frontier.Pop()
 		if !ok {
-			return nil
+			return nil, frontier.MaxSize()
 		}
 
 		if m.GoalTest(curr.state) {
-			return &curr
+			return &curr, frontier.MaxSize()
 		}
 
 		for _, nbr := range m.Successors(curr.state) {
@@ -195,7 +195,7 @@ func (m Maze) dfs() *Node[MazeLocation] {
 	}
 }
 
-func (m Maze) bfs() *Node[MazeLocation] {
+func (m Maze) bfs() (*Node[MazeLocation], int) {
 	start := m.GetStart()
 	startNode := Node[MazeLocation]{start, nil, 0.0, 0.0}
 
@@ -208,11 +208,11 @@ func (m Maze) bfs() *Node[MazeLocation] {
 	for {
 		curr, ok := frontier.PopFirst()
 		if !ok {
-			return nil
+			return nil, frontier.MaxSize()
 		}
 
 		if m.GoalTest(curr.state) {
-			return &curr
+			return &curr, frontier.MaxSize()
 		}
 
 		for _, nbr := range m.Successors(curr.state) {
@@ -227,7 +227,7 @@ func (m Maze) bfs() *Node[MazeLocation] {
 	}
 }
 
-func (m Maze) a_star() *Node[MazeLocation] {
+func (m Maze) a_star() (*Node[MazeLocation], int) {
 	// dist_func := ManhattanDistance
 	dist_func := EucleanDistance
 	goal := m.GetGoal()
@@ -244,11 +244,11 @@ func (m Maze) a_star() *Node[MazeLocation] {
 	for {
 		curr, ok := frontier.Pop()
 		if !ok {
-			return nil
+			return nil, frontier.MaxSize()
 		}
 
 		if m.GoalTest(curr.state) {
-			return &curr
+			return &curr, frontier.MaxSize()
 		}
 
 		for _, nbr := range m.Successors(curr.state) {
@@ -290,9 +290,9 @@ func (m *Maze) MarkPath(node *Node[MazeLocation]) {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	num_rows := 10
-	num_cols := 10
-	sparseness := .2
+	num_rows := 20
+	num_cols := 20
+	sparseness := .3
 	m := InitMaze(num_rows, num_cols, sparseness)
 	m.SetStart(MazeLocation{0, 0})
 	m.SetGoal(MazeLocation{num_rows - 1, num_cols - 1})
@@ -304,28 +304,28 @@ func main() {
 	nbrs := m.Successors(start)
 	fmt.Println(nbrs)
 
-	t := m.dfs()
+	t, max_size := m.dfs()
 
 	if t != nil {
-		fmt.Println("cost = ", t.cost)
+		fmt.Println("cost = ", t.cost, "max size: ", max_size)
 		m.MarkPath(t)
 		fmt.Println(m)
 	}
 	m.ClearPath()
 
-	t = m.bfs()
+	t, max_size = m.bfs()
 
 	if t != nil {
-		fmt.Println("cost = ", t.cost)
+		fmt.Println("cost = ", t.cost, "max_size: ", max_size)
 		m.MarkPath(t)
 		fmt.Println(m)
 	}
 	m.ClearPath()
 
-	t = m.a_star()
+	t, max_size = m.a_star()
 
 	if t != nil {
-		fmt.Println("cost = ", t.cost)
+		fmt.Println("cost = ", t.cost, "max_size: ", max_size)
 		m.MarkPath(t)
 		fmt.Println(m)
 	}

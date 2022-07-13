@@ -5,15 +5,19 @@ type heaper interface {
 }
 
 type Heap[T heaper] struct {
-	vals []T
+	vals     []T
+	max_size int
 }
 
 func New[T heaper]() *Heap[T] {
-	return &Heap[T]{nil}
+	return &Heap[T]{nil, 0}
 }
 
 func (h *Heap[T]) Push(val T) {
 	h.vals = append(h.vals, val)
+	if len(h.vals) > h.max_size {
+		h.max_size = len(h.vals)
+	}
 
 	idx := len(h.vals) - 1
 
@@ -71,4 +75,8 @@ func (h *Heap[T]) Pop() (T, bool) {
 		}
 	}
 	return val, true
+}
+
+func (h *Heap[T]) MaxSize() int {
+	return h.max_size
 }

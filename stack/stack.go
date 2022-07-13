@@ -1,15 +1,19 @@
 package stack
 
 type Stack[T any] struct {
-	vals []T
+	vals     []T
+	max_size int
 }
 
 func New[T any]() *Stack[T] {
-	return &Stack[T]{nil}
+	return &Stack[T]{nil, 0}
 }
 
 func (s *Stack[T]) Push(val T) {
 	s.vals = append(s.vals, val)
+	if len(s.vals) > s.max_size {
+		s.max_size = len(s.vals)
+	}
 }
 
 func (s *Stack[T]) Pop() (T, bool) {
@@ -34,4 +38,8 @@ func (s *Stack[T]) PopFirst() (T, bool) {
 	} else {
 		return val, false
 	}
+}
+
+func (s *Stack[T]) MaxSize() int {
+	return s.max_size
 }
