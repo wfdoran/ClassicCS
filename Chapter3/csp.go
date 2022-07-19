@@ -52,3 +52,35 @@ func (csp CSP[V, D]) consistent(assignment map[V]D) bool {
 	}
 	return true
 }
+
+func (csp CSP[V, D]) backtrack_search(assignment map[V]D) map[V]D {
+	if len(assignment) == len(csp.variables) {
+		return assignment
+	}
+
+	var branch_var V
+
+	for v, _ := range csp.variables {
+		_, ok := assignment[v]
+		if !ok {
+			branch_var = v
+			break
+		}
+	}
+
+	for set_d, _ := range csp.domains {
+		sub_assignment := make(map[V]D)
+		for v, d := range assignment {
+			sub_assignment[v] = d
+		}
+		sub_assignment[branch_var] = set_d
+
+		if csp.consistent(sub_assignment) {
+			result := csp.backtrack_search(sub_assignment)
+			if result != nil {
+				return result
+			}
+		}
+	}
+	return nil
+}
