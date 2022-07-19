@@ -43,3 +43,12 @@ func (csp *CSP[V, D]) AddDomain(ds ...D) {
 func (csp *CSP[V, D]) AddConstraint(c Constraint[V, D]) {
 	csp.constraints = append(csp.constraints, c)
 }
+
+func (csp CSP[V, D]) consistent(assignment map[V]D) bool {
+	for _, c := range csp.constraints {
+		if !c.check(assignment) {
+			return false
+		}
+	}
+	return true
+}
