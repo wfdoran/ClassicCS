@@ -28,12 +28,16 @@ func New2[V comparable, D comparable](variables []V, domains []D) *CSP[V, D] {
 	return csp
 }
 
-func (csp *CSP[V, D]) AddVariable(v V) {
-	csp.variables[v] = true
+func (csp *CSP[V, D]) AddVariable(vs ...V) {
+	for _, v := range vs {
+		csp.variables[v] = true
+	}
 }
 
-func (csp *CSP[V, D]) AddDomain(d D) {
-	csp.domains[d] = true
+func (csp *CSP[V, D]) AddDomain(ds ...D) {
+	for _, d := range ds {
+		csp.domains[d] = true
+	}
 }
 
 func (csp *CSP[V, D]) AddConstraint(c Constraint[V, D]) {
