@@ -53,6 +53,24 @@ func (csp CSP[V, D]) consistent(assignment map[V]D) bool {
 	return true
 }
 
+func (csp *CSP[V, D]) AddConstraintNotEqual(v1 V, v2 V) {
+	var c Constraint[V, D]
+
+	c.inputs = append(c.inputs, v1, v2)
+
+	c.check = func(assignment map[V]D) bool {
+		d1, ok1 := assignment[v1]
+		d2, ok2 := assignment[v2]
+
+		if !ok1 || !ok2 {
+			return true
+		}
+		return d1 != d2
+	}
+
+	csp.AddConstraint(c)
+}
+
 func (csp CSP[V, D]) backtrack_search(assignment map[V]D) map[V]D {
 	if len(assignment) == len(csp.variables) {
 		return assignment
