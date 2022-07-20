@@ -1,4 +1,4 @@
-package main
+package csp
 
 import "fmt"
 
@@ -111,35 +111,7 @@ func (csp CSP[V, D]) backtrack_search(assignment map[V]D) map[V]D {
 	return nil
 }
 
-func main() {
-	csp := New[string, string]()
-
-	csp.AddVariable("Western Australia",
-		"Northern Territory",
-		"Queensland",
-		"South Australia",
-		"New South Wales",
-		"Victoria",
-		"Tasmania")
-
-	csp.AddDomain("red", "green", "blue")
-
-	csp.AddConstraintNotEqual("Western Australia", "Northern Territory")
-	csp.AddConstraintNotEqual("Western Australia", "South Australia")
-	csp.AddConstraintNotEqual("South Australia", "Northern Territory")
-	csp.AddConstraintNotEqual("Queensland", "Northern Territory")
-	csp.AddConstraintNotEqual("Queensland", "South Australia")
-	csp.AddConstraintNotEqual("Queensland", "New South Wales")
-	csp.AddConstraintNotEqual("New South Wales", "South Australia")
-	csp.AddConstraintNotEqual("Victoria", "South Australia")
-	csp.AddConstraintNotEqual("Victoria", "New South Wales")
-	csp.AddConstraintNotEqual("Victoria", "Tasmania")
-
-	blank := make(map[string]string)
-	soln := csp.backtrack_search(blank)
-
-	for v, d := range soln {
-		fmt.Println(v, " -> ", d)
-	}
-
+func (csp CSP[V, D]) BacktrackSearch() map[V]D {
+	blank := make(map[V]D)
+	return csp.backtrack_search((blank))
 }
