@@ -2,11 +2,11 @@ package csp
 
 import "fmt"
 
-type constraint_checker[V comparable, D comparable] func(map[V]D) bool
+type Constraint_checker[V comparable, D comparable] func(map[V]D) bool
 
 type Constraint[V comparable, D comparable] struct {
 	inputs []V
-	check  constraint_checker[V, D]
+	check  Constraint_checker[V, D]
 }
 
 type CSP[V comparable, D comparable] struct {
@@ -77,6 +77,13 @@ func (csp *CSP[V, D]) AddConstraintNotEqual(v1 V, v2 V) {
 	}
 
 	csp.AddConstraint(c)
+}
+
+func (csp *CSP[V, D]) AddConstraintGeneral(inputs []V, check Constraint_checker[V, D]) {
+	c := Constraint[V, D]{inputs: inputs, check: check}
+
+	csp.AddConstraint(c)
+
 }
 
 func (csp CSP[V, D]) backtrack_search(assignment map[V]D) map[V]D {
