@@ -114,7 +114,7 @@ func main() {
 
 	fmt.Println(" ", s, e, n, d)
 	fmt.Println(" ", m, o, r, e)
-	fmt.Println("-----")
+	fmt.Println("---------")
 	fmt.Println(m, o, n, e, y)
 
 }
