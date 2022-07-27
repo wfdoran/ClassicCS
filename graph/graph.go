@@ -19,14 +19,15 @@ func reverseEdge(e Edge) Edge {
 	return Edge{src: e.dst, dst: e.src}
 }
 
-type Vertexable interface {
-	comparable
-	fmt.Stringer
-}
-
-type Graph[V Vertexable] struct {
+type Graph[V comparable] struct {
 	vertices []V
 	edges    [][]Edge
+}
+
+func New[V comparable]() *Graph[V] {
+	var vertices []V
+	var edges [][]Edge
+	return &Graph[V]{vertices: vertices, edges: edges}
 }
 
 func (g Graph[V]) VertexCount() int {
@@ -41,14 +42,14 @@ func (g Graph[V]) EdgeCount() int {
 	return sum
 }
 
-func (g Graph[V]) AddVertex(v V) int {
+func (g *Graph[V]) AddVertex(v V) int {
 	g.vertices = append(g.vertices, v)
 	var nbrs []Edge
 	g.edges = append(g.edges, nbrs)
 	return g.VertexCount() - 1
 }
 
-func (g Graph[V]) AddEdge(e Edge) {
+func (g *Graph[V]) AddEdge(e Edge) {
 	g.edges[e.src] = append(g.edges[e.src], e)
 	g.edges[e.dst] = append(g.edges[e.dst], reverseEdge(e))
 }
@@ -63,15 +64,16 @@ func (g Graph[V]) IndexOf(v V) int {
 			return idx
 		}
 	}
+	fmt.Println("Fail on ", v)
 	return -1
 }
 
-func (g Graph[V]) AddEdgeByIndices(idx1 int, idx2 int) {
+func (g *Graph[V]) AddEdgeByIndices(idx1 int, idx2 int) {
 	e := NewEdge(idx1, idx2)
 	g.AddEdge(e)
 }
 
-func (g Graph[V]) AddEdgeByVertices(v1 V, v2 V) {
+func (g *Graph[V]) AddEdgeByVertices(v1 V, v2 V) {
 	idx1 := g.IndexOf(v1)
 	idx2 := g.IndexOf(v2)
 	g.AddEdgeByIndices(idx1, idx2)
@@ -103,7 +105,8 @@ func (g Graph[V]) String() string {
 	rv := ""
 
 	for idx, v := range g.vertices {
-		rv += v.String()
+		s := fmt.Sprint(v)
+		rv += s
 		rv += " -> ["
 		first := true
 		for _, v2 := range g.NeighborsForIndex(idx) {
@@ -112,9 +115,10 @@ func (g Graph[V]) String() string {
 			} else {
 				rv += ", "
 			}
-			rv += v2.String()
+			s := fmt.Sprint(v2)
+			rv += s
 		}
-		rv += " ]\n"
+		rv += "]\n"
 	}
 
 	return rv
