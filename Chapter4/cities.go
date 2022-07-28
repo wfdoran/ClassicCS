@@ -52,4 +52,8 @@ func main() {
 	g.AddEdgeByVertices("Philadelphia", "Washington")
 
 	fmt.Println(g)
+
+	n := g.ShortestPath("Boston", "Miami")
+	path := n.GetPath()
+	fmt.Println(path)
 }

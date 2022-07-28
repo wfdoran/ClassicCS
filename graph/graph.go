@@ -1,6 +1,9 @@
 package graph
 
-import "fmt"
+import (
+	"classic_sc/stack"
+	"fmt"
+)
 
 type Edge struct {
 	src int
@@ -122,4 +125,52 @@ func (g Graph[V]) String() string {
 	}
 
 	return rv
+}
+
+type Node[T any] struct {
+	state     T
+	parent    *Node[T]
+	cost      float64
+	heuristic float64
+}
+
+func (n Node[T]) GetPath() []T {
+	if n.parent == nil {
+		return []T{n.state}
+	} else {
+		x := n.parent.GetPath()
+		x = append(x, n.state)
+		return x
+	}
+}
+
+func (g Graph[V]) ShortestPath(src V, dst V) *Node[V] {
+	startNode := Node[V]{state: src, parent: nil, cost: 0.0, heuristic: 0.0}
+
+	frontier := stack.New[Node[V]]()
+	frontier.Push(startNode)
+
+	explored := make(map[V]bool)
+	explored[src] = true
+
+	for {
+		curr, ok := frontier.PopFirst()
+		if !ok {
+			return nil
+		}
+
+		if curr.state == dst {
+			return &curr
+		}
+
+		for _, nbr := range g.NeighborsForVertex(curr.state) {
+			_, ok := explored[nbr]
+
+			if !ok {
+				nbrNode := Node[V]{nbr, &curr, curr.cost + 1.0, 0.0}
+				frontier.Push(nbrNode)
+				explored[nbr] = true
+			}
+		}
+	}
 }
