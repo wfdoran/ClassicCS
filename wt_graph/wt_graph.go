@@ -113,14 +113,16 @@ func (g Graph[V]) String() string {
 		rv += s
 		rv += " -> ["
 		first := true
-		for _, v2 := range g.NeighborsForIndex(idx) {
+		for _, nbr := range g.edges[idx] {
 			if first {
 				first = false
 			} else {
 				rv += ", "
 			}
-			s := fmt.Sprint(v2)
+			s := fmt.Sprint(g.vertices[nbr.dst])
 			rv += s
+			s1 := fmt.Sprintf("(%.1f)", nbr.weight)
+			rv += s1
 		}
 		rv += "]\n"
 	}
@@ -170,7 +172,6 @@ func (g Graph[V]) ShortestPath(src V, dst V) *Node[V] {
 				rv = &curr
 			}
 		} else {
-
 			idx := g.IndexOf(curr.state)
 			for _, e := range g.edges[idx] {
 				nbr := g.VertexAt(e.dst)
