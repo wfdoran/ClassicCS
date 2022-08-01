@@ -56,4 +56,11 @@ func main() {
 	n := g.ShortestPath("Boston", "Miami")
 	path := n.GetPath()
 	fmt.Println(path)
+
+	m := g.VertexCount()
+
+	for start := 0; start < m; start++ {
+		mst := g.Mst(start)
+		fmt.Println(start, len(mst), wt_graph.PathWeight(mst))
+	}
 }

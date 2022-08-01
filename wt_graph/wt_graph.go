@@ -188,3 +188,44 @@ func (g Graph[V]) ShortestPath(src V, dst V) *Node[V] {
 		}
 	}
 }
+
+func (e Edge) Score() float64 {
+	return -e.weight
+}
+
+func PathWeight(path []Edge) float64 {
+	total := 0.0
+	for _, e := range path {
+		total += e.weight
+	}
+	return total
+}
+
+func (g Graph[V]) Mst(start int) []Edge {
+	var rv []Edge
+	pq := heap.New[Edge]()
+	visited := make([]bool, g.VertexCount())
+
+	visited[start] = true
+	for _, e := range g.edges[start] {
+		pq.Push(e)
+	}
+
+	for {
+		e, ok := pq.Pop()
+		if !ok {
+			break
+		}
+
+		if visited[e.dst] {
+			continue
+		}
+		visited[e.dst] = true
+		for _, e2 := range g.edges[e.dst] {
+			pq.Push(e2)
+		}
+		rv = append(rv, e)
+	}
+
+	return rv
+}
