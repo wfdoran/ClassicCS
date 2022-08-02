@@ -46,16 +46,16 @@ func main() {
 	g.AddEdgeByVertices("Chicago", "Detroit", 238.0)
 	g.AddEdgeByVertices("Detroit", "Boston", 613.0)
 	g.AddEdgeByVertices("Detroit", "Washington", 396.0)
-	g.AddEdgeByVertices("Detroit", "New York", 396.0)
+	g.AddEdgeByVertices("Detroit", "New York", 482.0)
 	g.AddEdgeByVertices("Boston", "New York", 190.0)
 	g.AddEdgeByVertices("New York", "Philadelphia", 81.0)
 	g.AddEdgeByVertices("Philadelphia", "Washington", 123.0)
 
 	fmt.Println(g)
 
-	n := g.ShortestPath("Boston", "Miami")
+	n := g.ShortestPath("Boston", "Los Angeles")
 	path := n.GetPath()
-	fmt.Println(path)
+	fmt.Println(n.GetCost(), path)
 
 	m := g.VertexCount()
 

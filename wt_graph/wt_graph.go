@@ -137,6 +137,10 @@ type Node[T any] struct {
 	heuristic float64
 }
 
+func (n Node[T]) GetCost() float64 {
+	return n.cost
+}
+
 func (n Node[T]) GetPath() []T {
 	if n.parent == nil {
 		return []T{n.state}
