@@ -2,11 +2,10 @@ package genetic
 
 import "math/rand"
 
-type Chromosome interface {
+type Chromosome[T any] interface {
 	Fitness() float64
-	RandomInstance() Chromosome
-	Crossover(Chromosome) Chromosome
-	Mutate()
+	Crossover(Chromosome[T]) (Chromosome[T], Chromosome[T])
+	Mutate() Chromosome[T]
 }
 
 type SelectionType int32
@@ -16,8 +15,10 @@ const (
 	TOURNAMENT
 )
 
-type GeneticAlgorithm struct {
-	population       []Chromosome
+type RandomInstanceFunc[T any] func() Chromosome[T]
+
+type GeneticAlgorithm[T any] struct {
+	population       []Chromosome[T]
 	threshold        float64
 	max_generations  int
 	mutation_chance  float64
@@ -25,15 +26,17 @@ type GeneticAlgorithm struct {
 	selection_type   SelectionType
 }
 
-func New(C Chromosome, pop_size int, threshold float64, max_generations int, mutation_chance float64,
-	crossover_chance float64, selection_type SelectionType) *GeneticAlgorithm {
+func New[T any](pop_size int, threshold float64, max_generations int, mutation_chance float64,
+	crossover_chance float64, selection_type SelectionType,
+	RandomInstance RandomInstanceFunc[T]) *GeneticAlgorithm[T] {
 
-	var population []Chromosome
+	var population []Chromosome[T]
 	for i := 0; i < pop_size; i++ {
-		population = append(population, C.RandomInstance())
+		population = append(population, RandomInstance())
 	}
 
-	return &GeneticAlgorithm{population: population,
+	return &GeneticAlgorithm[T]{
+		population:       population,
 		threshold:        threshold,
 		max_generations:  max_generations,
 		mutation_chance:  mutation_chance,
@@ -42,7 +45,7 @@ func New(C Chromosome, pop_size int, threshold float64, max_generations int, mut
 	}
 }
 
-func (ga GeneticAlgorithm) SelectRoulette() (Chromosome, Chromosome) {
+func (ga GeneticAlgorithm[T]) SelectRoulette() (Chromosome[T], Chromosome[T]) {
 	total := 0.0
 	for _, c := range ga.population {
 		total += c.Fitness()
@@ -77,16 +80,16 @@ func (ga GeneticAlgorithm) SelectRoulette() (Chromosome, Chromosome) {
 }
 
 // FixMe
-func (ga GeneticAlgorithm) SelectTournment(k int) (Chromosome, Chromosome) {
+func (ga GeneticAlgorithm[T]) SelectTournment(k int) (Chromosome[T], Chromosome[T]) {
 	return ga.population[0], ga.population[1]
 }
 
-func (ga *GeneticAlgorithm) ReproduceAndReplace() {
-	var new_population []Chromosome
+func (ga *GeneticAlgorithm[T]) ReproduceAndReplace() {
+	var new_population []Chromosome[T]
 
 	pop_size := len(ga.population)
 	for len(new_population) < pop_size {
-		var parent [2]Chromosome
+		var parent [2]Chromosome[T]
 
 		if ga.selection_type == ROULETTE {
 			parent[0], parent[1] = ga.SelectRoulette()
@@ -95,26 +98,25 @@ func (ga *GeneticAlgorithm) ReproduceAndReplace() {
 		}
 
 		if rand.Float64() < ga.crossover_chance {
-			child := parent[0].Crossover(parent[1])
-			new_population = append(new_population, child)
+			child0, child1 := parent[0].Crossover(parent[1])
+			new_population = append(new_population, child0, child1)
 		} else {
-			new_population = append(new_population, parent[0])
-			new_population = append(new_population, parent[1])
+			new_population = append(new_population, parent[0], parent[1])
 		}
 	}
 
 	ga.population = new_population[:pop_size]
 }
 
-func (ga *GeneticAlgorithm) Mutate() {
-	for _, c := range ga.population {
+func (ga *GeneticAlgorithm[T]) Mutate() {
+	for i, c := range ga.population {
 		if rand.Float64() < ga.mutation_chance {
-			c.Mutate()
+			ga.population[i] = c.Mutate()
 		}
 	}
 }
 
-func (ga *GeneticAlgorithm) Run() Chromosome {
+func (ga *GeneticAlgorithm[T]) Run() Chromosome[T] {
 	best := ga.population[0]
 	for _, c := range ga.population[1:] {
 		if c.Fitness() > best.Fitness() {
