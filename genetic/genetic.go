@@ -134,8 +134,8 @@ func (ga *GeneticAlgorithm[T]) Run() T {
 	}
 
 	for iter := 0; iter < ga.max_generations; iter++ {
-		fmt.Println(ga.population)
-		if ga.fitness(best) > ga.threshold {
+		// fmt.Println(ga.population)
+		if ga.fitness(best) >= ga.threshold {
 			return best
 		}
 
@@ -145,6 +145,7 @@ func (ga *GeneticAlgorithm[T]) Run() T {
 		for _, c := range ga.population {
 			if ga.fitness(c) > ga.fitness(best) {
 				best = c
+				fmt.Println(iter, best, ga.fitness(best))
 			}
 		}
 	}
