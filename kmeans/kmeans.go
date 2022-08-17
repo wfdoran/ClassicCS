@@ -85,3 +85,82 @@ func (d1 DataPoint) Equal(d2 *DataPoint) bool {
 func (d DataPoint) String() string {
 	return fmt.Sprint(d.original)
 }
+
+type Cluster struct {
+	point_idx []int
+	centroid  DataPoint
+}
+
+type KMeans struct {
+	k        int
+	clusters []Cluster
+	points   []DataPoint
+}
+
+func New(k int, data []DataPoint) *KMeans {
+	var km KMeans
+	km.k = k
+	for _, pt := range data {
+		km.points = append(km.points, pt)
+	}
+	km.clusters = make([]Cluster, k)
+	return &km
+}
+
+func (km *KMeans) Normalize() {
+	dim := len(km.points[0].original)
+	num_pts := len(km.points)
+	orig := make([]float64, num_pts)
+
+	for i := 0; i < dim; i++ {
+		for j := 0; j < num_pts; j++ {
+			orig[j] = km.points[j].original[i]
+		}
+		norm := Zscores(orig)
+		for j := 0; j < num_pts; j++ {
+			km.points[j].dimensions[i] = norm[i]
+		}
+	}
+}
+
+func (km *KMeans) AssignCluster() {
+	for i := 0; i < km.k; i++ {
+		km.clusters[i].point_idx = []int{}
+	}
+
+	num_points := len(km.points)
+	for j := 0; j < num_points; j++ {
+		assignment := -1
+		min_dist := 0.0
+
+		for i := 0; i < km.k; i++ {
+			dist := km.points[j].Distance(&km.clusters[i].centroid)
+			if assignment == -1 || dist < min_dist {
+				assignment = i
+				min_dist = dist
+			}
+		}
+
+		km.clusters[assignment].point_idx = append(km.clusters[assignment].point_idx, j)
+	}
+}
+
+func (km *KMeans) GenerateCentroids() {
+	dim := len(km.points[0].original)
+	for j := 0; j < km.k; j++ {
+		a := make([]float64, dim)
+
+		for _, pt_idx := range km.clusters[j].point_idx {
+			for i, v := range km.points[pt_idx].dimensions {
+				a[i] += v
+			}
+		}
+
+		for i := 0; i < dim; i++ {
+			a[i] /= float64(len(km.clusters[i].point_idx))
+		}
+
+		km.clusters[j].centroid.dimensions = a
+	}
+
+}
