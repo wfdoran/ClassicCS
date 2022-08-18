@@ -195,13 +195,32 @@ func (km *KMeans) GenerateCentroids() bool {
 	return change
 }
 
-func (km *KMeans) Run(max_iters int) {
+type KMResult struct {
+	Point      []float64
+	Assignment int
+}
+
+func (km *KMeans) Run(max_iters int) []KMResult {
 	km.ClearClusters()
 
 	for iter := 0; iter < max_iters; iter++ {
 		if !km.GenerateCentroids() {
+			fmt.Println("exit early: ", iter)
 			break
 		}
 		km.AssignCluster()
 	}
+
+	var rv []KMResult
+	for j := 0; j < km.k; j++ {
+		for _, idx := range km.clusters[j].point_idx {
+			q := KMResult{
+				Point:      km.points[idx].original,
+				Assignment: j,
+			}
+			rv = append(rv, q)
+		}
+	}
+
+	return rv
 }
