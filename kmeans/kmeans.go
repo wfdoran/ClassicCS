@@ -3,6 +3,7 @@ package kmeans
 import (
 	"fmt"
 	"math"
+	"math/rand"
 )
 
 func MeanStddev(a []float64) (float64, float64) {
@@ -52,17 +53,17 @@ func DataPointInit(a []float64) *DataPoint {
 	return &rv
 }
 
-func (d DataPoint) NumDimenstions() int {
+func (d DataPoint) NumDimensions() int {
 	return len(d.dimensions)
 }
 
 func (d1 DataPoint) Distance(d2 *DataPoint) float64 {
-	if len(d1.dimensions) != len(d2.dimensions) {
+	if d1.NumDimensions() != d2.NumDimensions() {
 		return -1.0
 	}
 
 	sum := 0.0
-	for i := 0; i < len(d1.dimensions); i++ {
+	for i := 0; i < d1.NumDimensions(); i++ {
 		diff := d1.dimensions[i] - d2.dimensions[i]
 		sum += diff * diff
 	}
@@ -70,11 +71,11 @@ func (d1 DataPoint) Distance(d2 *DataPoint) float64 {
 }
 
 func (d1 DataPoint) Equal(d2 *DataPoint) bool {
-	if len(d1.dimensions) != len(d2.dimensions) {
+	if d1.NumDimensions() != d2.NumDimensions() {
 		return false
 	}
 
-	for i := 0; i < len(d1.dimensions); i++ {
+	for i := 0; i < d1.NumDimensions(); i++ {
 		if d1.dimensions[i] != d2.dimensions[i] {
 			return false
 		}
@@ -107,9 +108,20 @@ func New(k int, data []DataPoint) *KMeans {
 	return &km
 }
 
+func (km KMeans) NumPoints() int {
+	return len(km.points)
+}
+
+func (km KMeans) NumDimensions() int {
+	if km.NumPoints() == 0 {
+		return -1
+	}
+	return km.points[0].NumDimensions()
+}
+
 func (km *KMeans) Normalize() {
-	dim := len(km.points[0].original)
-	num_pts := len(km.points)
+	dim := km.NumDimensions()
+	num_pts := km.NumPoints()
 	orig := make([]float64, num_pts)
 
 	for i := 0; i < dim; i++ {
@@ -123,12 +135,16 @@ func (km *KMeans) Normalize() {
 	}
 }
 
-func (km *KMeans) AssignCluster() {
-	for i := 0; i < km.k; i++ {
-		km.clusters[i].point_idx = []int{}
+func (km *KMeans) ClearClusters() {
+	for j := 0; j < km.k; j++ {
+		km.clusters[j].point_idx = []int{}
 	}
+}
 
-	num_points := len(km.points)
+func (km *KMeans) AssignCluster() {
+	km.ClearClusters()
+
+	num_points := km.NumPoints()
 	for j := 0; j < num_points; j++ {
 		assignment := -1
 		min_dist := 0.0
@@ -145,22 +161,47 @@ func (km *KMeans) AssignCluster() {
 	}
 }
 
-func (km *KMeans) GenerateCentroids() {
+func (km *KMeans) GenerateCentroids() bool {
 	dim := len(km.points[0].original)
+	change := false
 	for j := 0; j < km.k; j++ {
+		num_pts := len(km.clusters[j].point_idx)
+
 		a := make([]float64, dim)
 
-		for _, pt_idx := range km.clusters[j].point_idx {
-			for i, v := range km.points[pt_idx].dimensions {
-				a[i] += v
+		if num_pts == 0 {
+			idx := rand.Intn(len(km.points))
+			for i := 0; i < dim; i++ {
+				a[i] = km.points[idx].dimensions[i]
 			}
-		}
+			change = true
+		} else {
+			for _, pt_idx := range km.clusters[j].point_idx {
+				for i, v := range km.points[pt_idx].dimensions {
+					a[i] += v
+				}
+			}
 
-		for i := 0; i < dim; i++ {
-			a[i] /= float64(len(km.clusters[i].point_idx))
+			for i := 0; i < dim; i++ {
+				a[i] /= float64(len(km.clusters[j].point_idx))
+				if a[i] != km.clusters[j].centroid.dimensions[i] {
+					change = true
+				}
+			}
 		}
 
 		km.clusters[j].centroid.dimensions = a
 	}
+	return change
+}
 
+func (km *KMeans) Run(max_iters int) {
+	km.ClearClusters()
+
+	for iter := 0; iter < max_iters; iter++ {
+		if !km.GenerateCentroids() {
+			break
+		}
+		km.AssignCluster()
+	}
 }
