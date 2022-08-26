@@ -105,7 +105,28 @@ func (layer *Layer) Output(input []float64) []float64 {
 }
 
 func (layer *Layer) CalculateDeltas(expected []float64) {
-	for _, n := range layer.neurons {
-		n.delta = n.derivative(n.output_cache)
+	for i, n := range layer.neurons {
+		n.delta = n.derivative(n.output_cache) * (expected[i] - n.activation(n.output_cache))
 	}
+}
+
+type Network struct {
+	num_inputs int
+	layers     []*Layer
+}
+
+func NewNetwork(num_inputs int, learning_rate float64, layer_size []int) *Network {
+	var nn Network
+	nn.num_inputs = num_inputs
+
+	{
+		layer := NewInputLayer(layer_size[0], learning_rate, num_inputs)
+		nn.layers = append(nn.layers, layer)
+	}
+
+	for i := 1; i < len(layer_size); i++ {
+		layer := NewLayer(layer_size[i], learning_rate, nn.layers[i-1])
+		nn.layers = append(nn.layers, layer)
+	}
+	return &nn
 }
