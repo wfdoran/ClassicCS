@@ -1,6 +1,9 @@
 package nn
 
-import "math"
+import (
+	"math"
+	"math/rand"
+)
 
 func DotProduct(x []float64, y []float64) float64 {
 	rv := 0.0
@@ -42,5 +45,67 @@ func NewNeuron(weights []float64, learning_rate float64) *Neuron {
 
 func (n *Neuron) Output(inputs []float64) float64 {
 	n.output_cache = DotProduct(n.weights, inputs)
-	return n.output_cache
+	return n.activation(n.output_cache)
+}
+
+type Layer struct {
+	neurons  []*Neuron
+	previous *Layer
+}
+
+func NewInputLayer(num_neurons int, learning_rate float64, num_inputs int) *Layer {
+	var layer Layer
+
+	layer.previous = nil
+
+	for i := 0; i < num_neurons; i++ {
+		wts := make([]float64, num_inputs)
+		for j := 0; j < num_inputs; j++ {
+			wts[j] = rand.Float64()
+		}
+
+		layer.neurons = append(layer.neurons, NewNeuron(wts, learning_rate))
+	}
+
+	return &layer
+}
+
+func NewLayer(num_neurons int, learning_rate float64, previous *Layer) *Layer {
+	var layer Layer
+
+	layer.previous = previous
+
+	num_inputs := len(previous.neurons)
+	for i := 0; i < num_neurons; i++ {
+		wts := make([]float64, num_inputs)
+		for j := 0; j < num_inputs; j++ {
+			wts[j] = -1.0 + 2.0*rand.Float64()
+		}
+
+		layer.neurons = append(layer.neurons, NewNeuron(wts, learning_rate))
+	}
+
+	return &layer
+}
+
+func (layer *Layer) Output(input []float64) []float64 {
+	var inner []float64
+	if layer.previous == nil {
+		inner = input
+	} else {
+		inner = layer.previous.Output(input)
+	}
+
+	num_neurons := len(layer.neurons)
+	rv := make([]float64, num_neurons)
+	for i := 0; i < num_neurons; i++ {
+		rv[i] = layer.neurons[i].Output(inner)
+	}
+	return rv
+}
+
+func (layer *Layer) CalculateDeltas(expected []float64) {
+	for _, n := range layer.neurons {
+		n.delta = n.derivative(n.output_cache)
+	}
 }
