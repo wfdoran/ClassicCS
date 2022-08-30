@@ -31,6 +31,22 @@ type Neuron struct {
 	delta        float64
 }
 
+func NewRandomNeuron(num_inputs int) *Neuron {
+	n := Neuron{
+		weights:      make([]float64, num_inputs),
+		activation:   Sigmoid,
+		derivative:   DerivativeSigmoid,
+		output_cache: 0.0,
+		delta:        0.0,
+	}
+
+	for i := 0; i < num_inputs; i++ {
+		n.weights[i] = -1.0 + 2.0*rand.Float64()
+	}
+
+	return &n
+}
+
 func NewNeuron(weights []float64) *Neuron {
 	return &Neuron{
 		weights:      weights,
@@ -48,6 +64,7 @@ func (n *Neuron) Output(inputs []float64) float64 {
 
 type Layer struct {
 	neurons  []*Neuron
+	inputs   []float64
 	previous *Layer
 }
 
@@ -55,14 +72,10 @@ func NewInputLayer(num_neurons int, num_inputs int) *Layer {
 	var layer Layer
 
 	layer.previous = nil
+	layer.inputs = make([]float64, num_inputs)
 
 	for i := 0; i < num_neurons; i++ {
-		wts := make([]float64, num_inputs)
-		for j := 0; j < num_inputs; j++ {
-			wts[j] = rand.Float64()
-		}
-
-		layer.neurons = append(layer.neurons, NewNeuron(wts))
+		layer.neurons = append(layer.neurons, NewRandomNeuron(num_inputs))
 	}
 
 	return &layer
@@ -71,16 +84,13 @@ func NewInputLayer(num_neurons int, num_inputs int) *Layer {
 func NewLayer(num_neurons int, previous *Layer) *Layer {
 	var layer Layer
 
-	layer.previous = previous
-
 	num_inputs := len(previous.neurons)
-	for i := 0; i < num_neurons; i++ {
-		wts := make([]float64, num_inputs)
-		for j := 0; j < num_inputs; j++ {
-			wts[j] = -1.0 + 2.0*rand.Float64()
-		}
 
-		layer.neurons = append(layer.neurons, NewNeuron(wts))
+	layer.previous = previous
+	layer.inputs = make([]float64, num_inputs)
+
+	for i := 0; i < num_neurons; i++ {
+		layer.neurons = append(layer.neurons, NewRandomNeuron(num_inputs))
 	}
 
 	return &layer
