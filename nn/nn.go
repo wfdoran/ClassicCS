@@ -24,22 +24,22 @@ func DerivativeSigmoid(x float64) float64 {
 
 type ActivationFunc func(float64) float64
 type Neuron struct {
-	weights      []float64
-	bias         float64
-	activation   ActivationFunc
-	derivative   ActivationFunc
-	output_cache float64
-	delta        float64
+	weights          []float64
+	bias             float64
+	activation       ActivationFunc
+	derivative       ActivationFunc
+	activation_input float64
+	delta            float64
 }
 
 func NewRandomNeuron(num_inputs int) *Neuron {
 	n := Neuron{
-		weights:      make([]float64, num_inputs),
-		bias:         -1.0 + 2.0*rand.Float64(),
-		activation:   Sigmoid,
-		derivative:   DerivativeSigmoid,
-		output_cache: 0.0,
-		delta:        0.0,
+		weights:          make([]float64, num_inputs),
+		bias:             -1.0 + 2.0*rand.Float64(),
+		activation:       Sigmoid,
+		derivative:       DerivativeSigmoid,
+		activation_input: 0.0,
+		delta:            0.0,
 	}
 
 	for i := 0; i < num_inputs; i++ {
@@ -51,18 +51,18 @@ func NewRandomNeuron(num_inputs int) *Neuron {
 
 func NewNeuron(weights []float64, bias float64) *Neuron {
 	return &Neuron{
-		weights:      weights,
-		bias:         bias,
-		activation:   Sigmoid,
-		derivative:   DerivativeSigmoid,
-		output_cache: 0.0,
-		delta:        0.0,
+		weights:          weights,
+		bias:             bias,
+		activation:       Sigmoid,
+		derivative:       DerivativeSigmoid,
+		activation_input: 0.0,
+		delta:            0.0,
 	}
 }
 
-func (n *Neuron) Output(inputs []float64) float64 {
-	n.output_cache = DotProduct(n.weights, inputs) + n.bias
-	return n.activation(n.output_cache)
+func (n *Neuron) Eval(inputs []float64) float64 {
+	n.activation_input = DotProduct(n.weights, inputs) + n.bias
+	return n.activation(n.activation_input)
 }
 
 type Layer struct {
@@ -99,17 +99,17 @@ func NewLayer(num_neurons int, previous *Layer) *Layer {
 	return &layer
 }
 
-func (layer *Layer) Output(input []float64) []float64 {
+func (layer *Layer) Forward(input []float64) []float64 {
 	if layer.previous == nil {
 		layer.input = input
 	} else {
-		layer.input = layer.previous.Output(input)
+		layer.input = layer.previous.Forward(input)
 	}
 
 	num_neurons := len(layer.neurons)
 	rv := make([]float64, num_neurons)
 	for i := 0; i < num_neurons; i++ {
-		rv[i] = layer.neurons[i].Output(layer.input)
+		rv[i] = layer.neurons[i].Eval(layer.input)
 	}
 	return rv
 }
@@ -118,7 +118,7 @@ func (layer *Layer) CalculateDeltas(err []float64) {
 	k := len(layer.neurons[0].weights)
 	propagation_err := make([]float64, k)
 	for i, n := range layer.neurons {
-		n.delta = n.derivative(n.output_cache) * err[i]
+		n.delta = n.derivative(n.activation_input) * err[i]
 		for j, wt := range layer.neurons[i].weights {
 			propagation_err[j] += n.delta * wt
 		}
