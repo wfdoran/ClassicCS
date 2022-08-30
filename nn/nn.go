@@ -25,6 +25,7 @@ func DerivativeSigmoid(x float64) float64 {
 type ActivationFunc func(float64) float64
 type Neuron struct {
 	weights      []float64
+	bias         float64
 	activation   ActivationFunc
 	derivative   ActivationFunc
 	output_cache float64
@@ -34,6 +35,7 @@ type Neuron struct {
 func NewRandomNeuron(num_inputs int) *Neuron {
 	n := Neuron{
 		weights:      make([]float64, num_inputs),
+		bias:         -1.0 + 2.0*rand.Float64(),
 		activation:   Sigmoid,
 		derivative:   DerivativeSigmoid,
 		output_cache: 0.0,
@@ -47,9 +49,10 @@ func NewRandomNeuron(num_inputs int) *Neuron {
 	return &n
 }
 
-func NewNeuron(weights []float64) *Neuron {
+func NewNeuron(weights []float64, bias float64) *Neuron {
 	return &Neuron{
 		weights:      weights,
+		bias:         bias,
 		activation:   Sigmoid,
 		derivative:   DerivativeSigmoid,
 		output_cache: 0.0,
@@ -58,7 +61,7 @@ func NewNeuron(weights []float64) *Neuron {
 }
 
 func (n *Neuron) Output(inputs []float64) float64 {
-	n.output_cache = DotProduct(n.weights, inputs)
+	n.output_cache = DotProduct(n.weights, inputs) + n.bias
 	return n.activation(n.output_cache)
 }
 
