@@ -64,7 +64,7 @@ func (n *Neuron) Output(inputs []float64) float64 {
 
 type Layer struct {
 	neurons  []*Neuron
-	inputs   []float64
+	input    []float64
 	previous *Layer
 }
 
@@ -72,7 +72,7 @@ func NewInputLayer(num_neurons int, num_inputs int) *Layer {
 	var layer Layer
 
 	layer.previous = nil
-	layer.inputs = make([]float64, num_inputs)
+	layer.input = make([]float64, num_inputs)
 
 	for i := 0; i < num_neurons; i++ {
 		layer.neurons = append(layer.neurons, NewRandomNeuron(num_inputs))
@@ -87,7 +87,7 @@ func NewLayer(num_neurons int, previous *Layer) *Layer {
 	num_inputs := len(previous.neurons)
 
 	layer.previous = previous
-	layer.inputs = make([]float64, num_inputs)
+	layer.input = make([]float64, num_inputs)
 
 	for i := 0; i < num_neurons; i++ {
 		layer.neurons = append(layer.neurons, NewRandomNeuron(num_inputs))
@@ -97,17 +97,16 @@ func NewLayer(num_neurons int, previous *Layer) *Layer {
 }
 
 func (layer *Layer) Output(input []float64) []float64 {
-	var inner []float64
 	if layer.previous == nil {
-		inner = input
+		layer.input = input
 	} else {
-		inner = layer.previous.Output(input)
+		layer.input = layer.previous.Output(input)
 	}
 
 	num_neurons := len(layer.neurons)
 	rv := make([]float64, num_neurons)
 	for i := 0; i < num_neurons; i++ {
-		rv[i] = layer.neurons[i].Output(inner)
+		rv[i] = layer.neurons[i].Output(layer.input)
 	}
 	return rv
 }
