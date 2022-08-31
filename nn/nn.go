@@ -114,18 +114,25 @@ func (layer *Layer) Forward(input []float64) []float64 {
 	return rv
 }
 
-func (layer *Layer) CalculateDeltas(err []float64) {
-	k := len(layer.neurons[0].weights)
-	propagation_err := make([]float64, k)
+// err = actual - expected
+func (layer *Layer) BackpropagateErrors(err []float64) {
+	// First compute the error for each neuron of this layer
 	for i, n := range layer.neurons {
 		n.delta = n.derivative(n.activation_input) * err[i]
-		for j, wt := range layer.neurons[i].weights {
-			propagation_err[j] += n.delta * wt
-		}
 	}
 
+	// back propagate the error
 	if layer.previous != nil {
-		layer.previous.CalculateDeltas(propagation_err)
+		num_layer_inputs := len(layer.neurons[0].weights)
+		propagation_err := make([]float64, num_layer_inputs)
+
+		for i, n := range layer.neurons {
+			for j, wt := range layer.neurons[i].weights {
+				propagation_err[j] += n.delta * wt
+			}
+		}
+
+		layer.previous.BackpropagateErrors(propagation_err)
 	}
 }
 
@@ -152,5 +159,22 @@ func NewNetwork(num_inputs int, learning_rate float64, layer_size []int) *Networ
 	return &nn
 }
 
-func (n *Network) UpdateWeights() {
+func (nn *Network) UpdateWeights() float64 {
+	rv := 0.0
+	for _, layer := range nn.layers {
+		for _, n := range layer.neurons {
+			for i, _ := range n.weights {
+				change := nn.learning_rate * layer.input[i] * n.delta
+				rv += change * change
+				n.weights[i] -= change
+			}
+
+			{
+				change := nn.learning_rate * n.delta
+				rv += change * change
+				n.bias -= change
+			}
+		}
+	}
+	return rv
 }
