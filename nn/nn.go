@@ -191,8 +191,8 @@ func (nn *Network) UpdateWeights() float64 {
 }
 
 type NNData struct {
-	input  []float64
-	output []float64
+	Input  []float64
+	Output []float64
 }
 
 func (nn *Network) Train(data []NNData, num_epochs int) {
@@ -200,10 +200,10 @@ func (nn *Network) Train(data []NNData, num_epochs int) {
 		total_error := 0.0
 		total_change := 0.0
 		for _, d := range data {
-			out := nn.Forward(d.input)
+			out := nn.Forward(d.Input)
 			err := make([]float64, nn.num_inputs)
 			for i, v := range out {
-				err[i] = v - d.output[i]
+				err[i] = v - d.Output[i]
 				total_error += err[i] * err[i]
 			}
 			nn.BackpropagateErrors(err)
