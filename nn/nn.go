@@ -1,6 +1,7 @@
 package nn
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -159,6 +160,16 @@ func NewNetwork(num_inputs int, learning_rate float64, layer_size []int) *Networ
 	return &nn
 }
 
+func (nn *Network) Forward(input []float64) []float64 {
+	num_layers := len(nn.layers)
+	return nn.layers[num_layers-1].Forward(input)
+}
+
+func (nn *Network) BackpropagateErrors(err []float64) {
+	num_layers := len(nn.layers)
+	nn.layers[num_layers-1].BackpropagateErrors(err)
+}
+
 func (nn *Network) UpdateWeights() float64 {
 	rv := 0.0
 	for _, layer := range nn.layers {
@@ -177,4 +188,29 @@ func (nn *Network) UpdateWeights() float64 {
 		}
 	}
 	return rv
+}
+
+type NNData struct {
+	input  []float64
+	output []float64
+}
+
+func (nn *Network) Train(data []NNData, num_epochs int) {
+	for epoch := 0; epoch < num_epochs; epoch++ {
+		total_error := 0.0
+		total_change := 0.0
+		for _, d := range data {
+			out := nn.Forward(d.input)
+			err := make([]float64, nn.num_inputs)
+			for i, v := range out {
+				err[i] = v - d.output[i]
+				total_error += err[i] * err[i]
+			}
+			nn.BackpropagateErrors(err)
+			total_change += nn.UpdateWeights()
+		}
+		fmt.Println(epoch, total_error, total_change)
+
+	}
+
 }
