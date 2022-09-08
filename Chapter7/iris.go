@@ -3,7 +3,6 @@ package main
 import (
 	"classic_sc/nn"
 	"encoding/csv"
-	"fmt"
 	"os"
 	"strconv"
 )
@@ -75,7 +74,7 @@ func main() {
 		data[j].class_int = cl
 	}
 
-	fmt.Println(data)
+	// fmt.Println(data)
 
 	var nn_data []nn.NNData
 
@@ -84,14 +83,14 @@ func main() {
 		nn_d.Input = d.norm_input[:]
 		nn_d.Output = make([]float64, num_classes)
 		nn_d.Output[d.class_int] = 1.0
-		fmt.Println(d)
+		// fmt.Println(d)
 
 		nn_data = append(nn_data, nn_d)
 	}
 
-	fmt.Println(nn_data)
+	// fmt.Println(nn_data)
 
 	learning_rate := 1.0
 	nn := nn.NewNetwork(num_features, learning_rate, []int{5, num_classes})
-	nn.Train(nn_data, 100)
+	nn.Train(nn_data, 2)
 }

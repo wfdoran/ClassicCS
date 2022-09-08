@@ -68,34 +68,30 @@ func (n *Neuron) Eval(inputs []float64) float64 {
 
 type Layer struct {
 	neurons  []*Neuron
-	input    []float64
 	previous *Layer
+	input    []float64
 }
 
 func NewInputLayer(num_neurons int, num_inputs int) *Layer {
 	var layer Layer
-
-	layer.previous = nil
-	layer.input = make([]float64, num_inputs)
-
 	for i := 0; i < num_neurons; i++ {
 		layer.neurons = append(layer.neurons, NewRandomNeuron(num_inputs))
 	}
+	layer.previous = nil
+	layer.input = make([]float64, num_inputs)
 
 	return &layer
 }
 
 func NewLayer(num_neurons int, previous *Layer) *Layer {
-	var layer Layer
-
 	num_inputs := len(previous.neurons)
 
-	layer.previous = previous
-	layer.input = make([]float64, num_inputs)
-
+	var layer Layer
 	for i := 0; i < num_neurons; i++ {
 		layer.neurons = append(layer.neurons, NewRandomNeuron(num_inputs))
 	}
+	layer.previous = previous
+	layer.input = make([]float64, num_inputs)
 
 	return &layer
 }
@@ -117,6 +113,8 @@ func (layer *Layer) Forward(input []float64) []float64 {
 
 // err = actual - expected
 func (layer *Layer) BackpropagateErrors(err []float64) {
+	eps := 0.0001
+
 	// First compute the error for each neuron of this layer
 	for i, n := range layer.neurons {
 		n.delta = n.derivative(n.activation_input) * err[i]
@@ -127,9 +125,16 @@ func (layer *Layer) BackpropagateErrors(err []float64) {
 		num_layer_inputs := len(layer.neurons[0].weights)
 		propagation_err := make([]float64, num_layer_inputs)
 
-		for i, n := range layer.neurons {
-			for j, wt := range layer.neurons[i].weights {
-				propagation_err[j] += n.delta * wt
+		for _, n := range layer.neurons {
+			total_wt := n.bias
+			for _, wt := range n.weights {
+				total_wt += wt
+			}
+
+			if total_wt > eps || total_wt < -eps {
+				for j, wt := range n.weights {
+					propagation_err[j] += n.delta * wt / total_wt
+				}
 			}
 		}
 
@@ -201,6 +206,8 @@ func (nn *Network) Train(data []NNData, num_epochs int) {
 		total_change := 0.0
 		for _, d := range data {
 			out := nn.Forward(d.Input)
+			fmt.Printf("%6.2f %6.2f %6.2f : %6.2f %6.2f %6.2f\n",
+				out[0], out[1], out[2], d.Output[0], d.Output[1], d.Output[2])
 			err := make([]float64, nn.num_inputs)
 			for i, v := range out {
 				err[i] = v - d.Output[i]
