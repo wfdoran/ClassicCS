@@ -1,22 +1,18 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"math/rand"
 )
 
-func dot_product(a []float64, b []float64) (float64, error) {
-	if len(a) != len(b) {
-		return 0.0, errors.New("lengths do not match")
-	}
+func dot_product(a []float64, b []float64) float64 {
 	n := len(a)
 	sum := 0.0
 	for i := range n {
 		sum += a[i] * b[i]
 	}
-	return sum, nil
+	return sum
 }
 
 func sigmoid(x float64) float64 {
@@ -62,6 +58,11 @@ func NewNeuron(num_inputs int) *Neuron {
 	return &n
 }
 
+func (n *Neuron) Forward(inputs []float64) float64 {
+	n.save_dot_prod = dot_product(inputs, n.weights) + n.bias
+	return n.activation(n.save_dot_prod)
+}
+
 type Layer struct {
 	neurons     []*Neuron
 	num_inputs  int
@@ -86,7 +87,7 @@ func main() {
 	a := []float64{1.0, 2.0}
 	b := []float64{3.0, 4.0}
 
-	c, _ := dot_product(a, b)
+	c := dot_product(a, b)
 	fmt.Println(c)
 
 	for i := -6; i <= 6; i++ {
