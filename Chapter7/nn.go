@@ -83,6 +83,19 @@ func NewLayer(num_neurons int, num_inputs int) *Layer {
 	return &x
 }
 
+func (x *Layer) Forward(input []float64) []float64 {
+	output := make([]float64, len(x.neurons))
+	for i, v := range input {
+		x.save_inputs[i] = v
+	}
+
+	for j, n := range x.neurons {
+		output[i] = n.Forward(input)
+	}
+
+	return output
+}
+
 func main() {
 	a := []float64{1.0, 2.0}
 	b := []float64{3.0, 4.0}
