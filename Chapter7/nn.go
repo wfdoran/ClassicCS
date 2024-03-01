@@ -63,6 +63,13 @@ func (n *Neuron) Forward(inputs []float64) float64 {
 	return n.activation(n.save_dot_prod)
 }
 
+func (n *Neuron) BackProp(e float64, inputs []float64) {
+	n.delta = n.derivative(n.save_dot_prod) * e
+	for i, _ := range n.weights {
+		n.wt_update[i] += n.delta * n.learning_rate * n.weights[i]
+	}
+}
+
 type Layer struct {
 	neurons     []*Neuron
 	num_inputs  int
@@ -90,10 +97,22 @@ func (x *Layer) Forward(input []float64) []float64 {
 	}
 
 	for j, n := range x.neurons {
-		output[i] = n.Forward(input)
+		output[j] = n.Forward(input)
 	}
 
 	return output
+}
+
+func (x *Layer) BackProp(e []float64) []float64 {
+	back := make([]float64, x.num_inputs)
+
+	for i, n := range x.neurons {
+		n.BackProp(e[i], x.save_inputs)
+		for j, wt := range n.weights {
+			back[j] += wt * n.delta
+		}
+	}
+	return back
 }
 
 func main() {
