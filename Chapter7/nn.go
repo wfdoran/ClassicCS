@@ -32,9 +32,10 @@ type ActivationFunc func(float64) float64
 
 type Neuron struct {
 	weights       []float64
+	wt_update     []float64
 	bias          float64
 	learning_rate float64
-	output_cache  float64
+	save_dot_prod float64
 	delta         float64
 
 	activation ActivationFunc
@@ -44,9 +45,10 @@ type Neuron struct {
 func NewNeuron(num_inputs int) *Neuron {
 	n := Neuron{
 		weights:       make([]float64, num_inputs),
+		wt_update:     make([]float64, num_inputs),
 		bias:          -1.0 + 2.0*rand.Float64(),
 		learning_rate: 0.5,
-		output_cache:  0.0,
+		save_dot_prod: 0.0,
 		delta:         0.0,
 
 		activation: sigmoid,
@@ -61,33 +63,20 @@ func NewNeuron(num_inputs int) *Neuron {
 }
 
 type Layer struct {
-	neurons  []*Neuron
-	previous *Layer
+	neurons     []*Neuron
+	num_inputs  int
+	save_inputs []float64
 }
 
-func NewFirstLayer(num_neurons int, num_inputs int) *Layer {
+func NewLayer(num_neurons int, num_inputs int) *Layer {
 	x := Layer{
-		neurons:  make([]*Neuron, num_neurons),
-		previous: nil,
+		neurons:     make([]*Neuron, num_neurons),
+		num_inputs:  num_inputs,
+		save_inputs: make([]float64, num_inputs),
 	}
 
 	for i := range num_neurons {
 		x.neurons[i] = NewNeuron(num_inputs)
-	}
-
-	return &x
-}
-
-func NewLayer(num_neurons int, previous *Layer) *Layer {
-	x := Layer{
-		neurons:  make([]*Neuron, num_neurons),
-		previous: previous,
-	}
-
-	num_inputs := len(previous.neurons)
-
-	for i := range num_neurons {
-		x.neurons[i] = NewNeuron((num_inputs))
 	}
 
 	return &x
