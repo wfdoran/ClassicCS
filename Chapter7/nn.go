@@ -30,6 +30,7 @@ type Neuron struct {
 	weights       []float64
 	wt_update     []float64
 	bias          float64
+	bias_update   float64
 	learning_rate float64
 	save_dot_prod float64
 	delta         float64
@@ -43,6 +44,7 @@ func NewNeuron(num_inputs int) *Neuron {
 		weights:       make([]float64, num_inputs),
 		wt_update:     make([]float64, num_inputs),
 		bias:          -1.0 + 2.0*rand.Float64(),
+		bias_update:   0.0,
 		learning_rate: 0.5,
 		save_dot_prod: 0.0,
 		delta:         0.0,
@@ -53,6 +55,7 @@ func NewNeuron(num_inputs int) *Neuron {
 
 	for i := range num_inputs {
 		n.weights[i] = -1.0 + 2.0*rand.Float64()
+		n.wt_update[i] = 0.0
 	}
 
 	return &n
@@ -66,8 +69,9 @@ func (n *Neuron) Forward(inputs []float64) float64 {
 func (n *Neuron) BackProp(e float64, inputs []float64) {
 	n.delta = n.derivative(n.save_dot_prod) * e
 	for i, _ := range n.weights {
-		n.wt_update[i] += n.delta * n.learning_rate * n.weights[i]
+		n.wt_update[i] += n.delta * n.learning_rate * inputs[i]
 	}
+	n.bias_update = n.delta * n.learning_rate
 }
 
 type Layer struct {
