@@ -1,3 +1,3 @@
 module classic_sc
 
-go 1.18
+go 1.22

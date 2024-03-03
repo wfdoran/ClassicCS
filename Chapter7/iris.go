@@ -1,10 +1,12 @@
 package main
 
 import (
-	"classic_sc/nn"
 	"encoding/csv"
+	"fmt"
 	"os"
 	"strconv"
+
+	"classic_sc/nn"
 )
 
 const num_features int = 4
@@ -76,21 +78,25 @@ func main() {
 
 	// fmt.Println(data)
 
-	var nn_data []nn.NNData
+	var irus_data []nn.NNData
 
 	for _, d := range data {
 		var nn_d nn.NNData
 		nn_d.Input = d.norm_input[:]
 		nn_d.Output = make([]float64, num_classes)
 		nn_d.Output[d.class_int] = 1.0
-		// fmt.Println(d)
 
-		nn_data = append(nn_data, nn_d)
+		irus_data = append(irus_data, nn_d)
 	}
 
-	// fmt.Println(nn_data)
+	for _, d := range irus_data {
+		fmt.Println(d)
+	}
 
-	learning_rate := 1.0
-	nn := nn.NewNetwork(num_features, learning_rate, []int{5, num_classes})
-	nn.Train(nn_data, 2)
+	nnet := nn.NewNetwork(num_features, 6, num_classes)
+	nnet.Train(irus_data, 100)
+
+	// learning_rate := 1.0
+	// nn := nn.NewNetwork(num_features, learning_rate, []int{5, num_classes})
+	// nn.Train(nn_data, 2)
 }
