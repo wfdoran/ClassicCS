@@ -74,6 +74,20 @@ func (n *Neuron) BackProp(e float64, inputs []float64) {
 	n.bias_update = n.delta * n.learning_rate
 }
 
+func (n *Neuron) UpdateWeights() float64 {
+	total := 0.0
+	for i, change := range n.wt_update {
+		n.weights[i] += change
+		total += math.Abs(change)
+		n.wt_update[i] = 0.0
+	}
+	n.bias += n.bias_update
+	total += math.Abs(n.bias_update)
+	n.bias_update = 0.0
+
+	return total
+}
+
 type Layer struct {
 	neurons     []*Neuron
 	num_inputs  int
@@ -117,6 +131,36 @@ func (x *Layer) BackProp(e []float64) []float64 {
 		}
 	}
 	return back
+}
+
+func (x *Layer) UpdateWeights() float64 {
+	total := 0.0
+	for _, n := range x.neurons {
+		total += n.UpdateWeights()
+	}
+	return total
+}
+
+type Network struct {
+	num_inputs int
+	layers     []*Layer
+}
+
+func NewNetwork(num_inputs int, num_neurons ...int) *Network {
+	nn := Network{
+		num_inputs: num_inputs,
+		layers:     nil,
+	}
+
+	prev := num_inputs
+
+	for a := range num_neurons {
+		x := NewLayer(a, prev)
+		nn.layers = append(nn.layers, x)
+		prev = a
+	}
+
+	return &nn
 }
 
 func main() {
