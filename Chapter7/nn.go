@@ -163,6 +163,25 @@ func NewNetwork(num_inputs int, num_neurons ...int) *Network {
 	return &nn
 }
 
+func (nn *Network) Forward(input []float64) []float64 {
+	vec := make([]float64, nn.num_inputs)
+	copy(vec, input)
+	num_layers := len(nn.layers)
+	for i := 0; i < num_layers; i++ {
+		vec = nn.layers[i].Forward(vec)
+	}
+	return vec
+}
+
+func (nn *Network) BackProp(e []float64) {
+	vec := make([]float64, nn.num_inputs)
+	copy(vec, e)
+	num_layers := len(nn.layers)
+	for i := num_layers - 1; i >= 0; i-- {
+		vec = nn.layers[i].BackProp(vec)
+	}
+}
+
 func main() {
 	a := []float64{1.0, 2.0}
 	b := []float64{3.0, 4.0}
