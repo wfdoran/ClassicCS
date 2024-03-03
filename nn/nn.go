@@ -61,6 +61,16 @@ func NewNeuron(num_inputs int) *Neuron {
 	return &n
 }
 
+func (n Neuron) String() string {
+	rv := ""
+
+	for _, w := range n.weights {
+		rv += fmt.Sprintf("%8.4f ", w)
+	}
+	rv += fmt.Sprintf(" : %8.4f", n.bias)
+	return rv
+}
+
 func (n *Neuron) Forward(inputs []float64) float64 {
 	n.save_dot_prod = dot_product(inputs, n.weights) + n.bias
 	return n.activation(n.save_dot_prod)
@@ -77,7 +87,7 @@ func (n *Neuron) BackProp(e float64, inputs []float64) {
 func (n *Neuron) UpdateWeights() float64 {
 	total := 0.0
 	for i, change := range n.wt_update {
-		n.weights[i] -= change
+		n.weights[i] += change
 		total += math.Abs(change)
 		n.wt_update[i] = 0.0
 	}
