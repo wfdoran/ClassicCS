@@ -182,6 +182,14 @@ func (nn *Network) BackProp(e []float64) {
 	}
 }
 
+func (x *Network) UpdateWeights() float64 {
+	total := 0.0
+	for _, x := range x.layers {
+		total += x.UpdateWeights()
+	}
+	return total
+}
+
 func main() {
 	a := []float64{1.0, 2.0}
 	b := []float64{3.0, 4.0}
