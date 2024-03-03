@@ -1,4 +1,4 @@
-package main
+package nn
 
 import (
 	"fmt"
@@ -190,7 +190,7 @@ func (nn *Network) UpdateWeights() float64 {
 	return total
 }
 
-func (nn *Network) Train(input []float64, expect []float64) {
+func (nn *Network) TrainOneData(input []float64, expect []float64) {
 	actual := nn.Forward(input)
 	num_outputs := len(expect)
 	e := make([]float64, num_outputs)
@@ -200,6 +200,22 @@ func (nn *Network) Train(input []float64, expect []float64) {
 	nn.BackProp(e)
 }
 
+type NNData struct {
+	input  []float64
+	output []float64
+}
+
+func (nn *Network) Train(data []NNData, num_epochs int) {
+	for epoch := range num_epochs {
+		for _, d := range data {
+			nn.TrainOneData(d.input, d.output)
+		}
+		change := nn.UpdateWeights()
+		fmt.Printf("%5d %20.10f\n", epoch, change)
+	}
+}
+
+/*
 func main() {
 	a := []float64{1.0, 2.0}
 	b := []float64{3.0, 4.0}
@@ -213,3 +229,4 @@ func main() {
 	}
 
 }
+*/
