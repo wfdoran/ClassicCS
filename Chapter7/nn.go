@@ -182,12 +182,22 @@ func (nn *Network) BackProp(e []float64) {
 	}
 }
 
-func (x *Network) UpdateWeights() float64 {
+func (nn *Network) UpdateWeights() float64 {
 	total := 0.0
-	for _, x := range x.layers {
+	for _, x := range nn.layers {
 		total += x.UpdateWeights()
 	}
 	return total
+}
+
+func (nn *Network) Train(input []float64, expect []float64) {
+	actual := nn.Forward(input)
+	num_outputs := len(expect)
+	e := make([]float64, num_outputs)
+	for i := range num_outputs {
+		e[i] = expect[i] - actual[i]
+	}
+	nn.BackProp(e)
 }
 
 func main() {
