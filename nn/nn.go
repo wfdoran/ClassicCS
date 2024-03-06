@@ -151,6 +151,14 @@ func (x *Layer) UpdateWeights() float64 {
 	return total
 }
 
+func (x Layer) String() string {
+	rv := ""
+	for _, n := range x.neurons {
+		rv += n.String() + "\n"
+	}
+	return rv
+}
+
 type Network struct {
 	num_inputs int
 	layers     []*Layer
@@ -184,7 +192,7 @@ func (nn *Network) Forward(input []float64) []float64 {
 }
 
 func (nn *Network) BackProp(e []float64) {
-	vec := make([]float64, nn.num_inputs)
+	vec := make([]float64, len(e))
 	copy(vec, e)
 	num_layers := len(nn.layers)
 	for i := num_layers - 1; i >= 0; i-- {
@@ -206,12 +214,20 @@ func (nn *Network) TrainOneData(input []float64, expect []float64) float64 {
 	e := make([]float64, num_outputs)
 	total_error := 0.0
 	for i := range num_outputs {
-		e[i] = expect[i] - actual[i]
+		e[i] = actual[i] - expect[i]
 		total_error += math.Abs(e[i])
 	}
 
 	nn.BackProp(e)
 	return total_error
+}
+func (nn Network) String() string {
+	rv := ""
+	for i, x := range nn.layers {
+		rv += fmt.Sprintf("Layer %d\n", i)
+		rv += x.String()
+	}
+	return rv
 }
 
 type NNData struct {
