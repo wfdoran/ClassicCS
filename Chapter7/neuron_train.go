@@ -8,7 +8,7 @@ import (
 )
 
 func sigmoid(x float64) float64 {
-	return 1.0 / (1.0 + math.Exp(x))
+	return 1.0 / (1.0 + math.Exp(-x))
 }
 
 func dot_product(a []float64, b []float64) float64 {

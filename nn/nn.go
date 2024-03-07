@@ -16,7 +16,7 @@ func dot_product(a []float64, b []float64) float64 {
 }
 
 func sigmoid(x float64) float64 {
-	return 1.0 / (1.0 + math.Exp(x))
+	return 1.0 / (1.0 + math.Exp(-x))
 }
 
 func d_sigmoid(x float64) float64 {
@@ -87,11 +87,11 @@ func (n *Neuron) BackProp(e float64, inputs []float64) {
 func (n *Neuron) UpdateWeights() float64 {
 	total := 0.0
 	for i, change := range n.wt_update {
-		n.weights[i] += change
+		n.weights[i] -= change
 		total += math.Abs(change)
 		n.wt_update[i] = 0.0
 	}
-	n.bias += n.bias_update
+	n.bias -= n.bias_update
 	total += math.Abs(n.bias_update)
 	n.bias_update = 0.0
 

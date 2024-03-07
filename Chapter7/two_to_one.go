@@ -7,14 +7,14 @@ import (
 )
 
 func main() {
-	num_inputs := 2
-	num_outputs := 1
+	num_inputs := 3
+	num_outputs := 2
 
 	nnet1 := nn.NewNetwork(num_inputs, num_outputs)
 
 	var data [](nn.NNData)
 
-	num_data := 10
+	num_data := 100
 	for range num_data {
 		in := make([]float64, num_inputs)
 		for j := range num_inputs {
