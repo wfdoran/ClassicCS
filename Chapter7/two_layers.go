@@ -7,14 +7,16 @@ import (
 )
 
 func main() {
-	num_inputs := 3
-	num_outputs := 2
+	rand.Seed(1)
+	num_inputs := 2
+	num_hidden := 3
+	num_outputs := 1
 
-	nnet1 := nn.NewNetwork(num_inputs, num_outputs)
+	nnet1 := nn.NewNetwork(num_inputs, num_hidden, num_outputs)
 
 	var data [](nn.NNData)
 
-	num_data := 100
+	num_data := 10000
 	for range num_data {
 		in := make([]float64, num_inputs)
 		for j := range num_inputs {
@@ -29,8 +31,17 @@ func main() {
 		data = append(data, x)
 	}
 
-	nnet2 := nn.NewNetwork(num_inputs, num_outputs)
-	nnet2.Train(data, 1000, 25)
+	fmt.Println(data[0])
+
+	nnet2 := nn.NewNetwork(num_inputs, num_hidden, num_outputs)
+
+	fmt.Println("Original Values:")
+	fmt.Println(nnet2)
+
+	nnet2.Train(data, 10000, 25)
+
+	// nnet2.TrainOneData(data[0].Input, data[0].Output)
+	// nnet2.UpdateWeights()
 
 	fmt.Println("True Values:")
 	fmt.Println(nnet1)

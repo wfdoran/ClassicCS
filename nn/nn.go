@@ -3,7 +3,7 @@ package nn
 import (
 	"fmt"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 )
 
 func dot_product(a []float64, b []float64) float64 {
@@ -41,9 +41,9 @@ type Neuron struct {
 
 func NewNeuron(num_inputs int) *Neuron {
 	n := Neuron{
-		weights:       make([]float64, num_inputs),
-		wt_update:     make([]float64, num_inputs),
-		bias:          -1.0 + 2.0*rand.Float64(),
+		weights:   make([]float64, num_inputs),
+		wt_update: make([]float64, num_inputs),
+		// bias:          -1.0 + 2.0*rand.Float64(),
 		bias_update:   0.0,
 		learning_rate: 0.5,
 		save_dot_prod: 0.0,
@@ -78,7 +78,7 @@ func (n *Neuron) Forward(inputs []float64) float64 {
 
 func (n *Neuron) BackProp(e float64, inputs []float64) {
 	n.delta = n.derivative(n.save_dot_prod) * e
-	for i, _ := range n.weights {
+	for i := range n.weights {
 		n.wt_update[i] += n.delta * n.learning_rate * inputs[i]
 	}
 	n.bias_update = n.delta * n.learning_rate
@@ -87,12 +87,12 @@ func (n *Neuron) BackProp(e float64, inputs []float64) {
 func (n *Neuron) UpdateWeights() float64 {
 	total := 0.0
 	for i, change := range n.wt_update {
-		n.weights[i] -= change
+		n.weights[i] += change
 		total += math.Abs(change)
 		n.wt_update[i] = 0.0
 	}
-	n.bias -= n.bias_update
-	total += math.Abs(n.bias_update)
+	// n.bias += n.bias_update
+	// total += math.Abs(n.bias_update)
 	n.bias_update = 0.0
 
 	return total
@@ -214,7 +214,7 @@ func (nn *Network) TrainOneData(input []float64, expect []float64) float64 {
 	e := make([]float64, num_outputs)
 	total_error := 0.0
 	for i := range num_outputs {
-		e[i] = actual[i] - expect[i]
+		e[i] = expect[i] - actual[i]
 		total_error += math.Abs(e[i])
 	}
 
@@ -230,18 +230,45 @@ func (nn Network) String() string {
 	return rv
 }
 
+func gcd(a, b int) int {
+	if a < b {
+		a, b = b, a
+	}
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+func rand_step(n int) int {
+	for {
+		x := rand.IntN(n)
+		if gcd(n, x) == 1 {
+			return x
+		}
+	}
+}
+
 type NNData struct {
 	Input  []float64
 	Output []float64
 }
 
-func (nn *Network) Train(data []NNData, num_epochs int) {
+func (nn *Network) Train(data []NNData, num_epochs int, update_freq int) {
 	for epoch := range num_epochs {
 		total_error := 0.0
-		for _, d := range data {
-			total_error += nn.TrainOneData(d.Input, d.Output)
+		change := 0.0
+		num_data := len(data)
+		idx := 0
+		idx_step := rand_step(num_data)
+		for i := range data {
+			total_error += nn.TrainOneData(data[idx].Input, data[idx].Output)
+			idx = (idx + idx_step) % num_data
+			if i%update_freq == update_freq-1 {
+				change += nn.UpdateWeights()
+			}
 		}
-		change := nn.UpdateWeights()
+		change += nn.UpdateWeights()
 		fmt.Printf("%5d %20.10f %20.10f\n", epoch, total_error, change)
 	}
 }
