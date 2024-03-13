@@ -43,8 +43,7 @@ func NewNeuron(num_inputs int) *Neuron {
 	n := Neuron{
 		weights:   make([]float64, num_inputs),
 		wt_update: make([]float64, num_inputs),
-		bias:      0.0,
-		// bias:          -1.0 + 2.0*rand.Float64(),
+		bias:          -1.0 + 2.0*rand.Float64(),
 		bias_update:   0.0,
 		learning_rate: 0.5,
 		save_dot_prod: 0.0,
@@ -93,8 +92,8 @@ func (n *Neuron) UpdateWeights() float64 {
 		total += math.Abs(change)
 		n.wt_update[i] = 0.0
 	}
-	// n.bias += n.bias_update
-	// total += math.Abs(n.bias_update)
+	n.bias -= n.bias_update
+	total += math.Abs(n.bias_update)
 	n.bias_update = 0.0
 
 	return total
