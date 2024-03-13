@@ -38,10 +38,7 @@ func main() {
 	fmt.Println("Original Values:")
 	fmt.Println(nnet2)
 
-	nnet2.Train(data, 10000, 25)
-
-	// nnet2.TrainOneData(data[0].Input, data[0].Output)
-	// nnet2.UpdateWeights()
+	nnet2.Train(data, 100000, 25)
 
 	fmt.Println("True Values:")
 	fmt.Println(nnet1)

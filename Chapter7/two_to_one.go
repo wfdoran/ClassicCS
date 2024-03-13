@@ -30,7 +30,7 @@ func main() {
 	}
 
 	nnet2 := nn.NewNetwork(num_inputs, num_outputs)
-	nnet2.Train(data, 1000, 25)
+	nnet2.Train(data, 100, 25)
 
 	fmt.Println("True Values:")
 	fmt.Println(nnet1)

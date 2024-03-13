@@ -43,6 +43,7 @@ func NewNeuron(num_inputs int) *Neuron {
 	n := Neuron{
 		weights:   make([]float64, num_inputs),
 		wt_update: make([]float64, num_inputs),
+		bias:      0.0,
 		// bias:          -1.0 + 2.0*rand.Float64(),
 		bias_update:   0.0,
 		learning_rate: 0.5,
@@ -79,15 +80,16 @@ func (n *Neuron) Forward(inputs []float64) float64 {
 func (n *Neuron) BackProp(e float64, inputs []float64) {
 	n.delta = n.derivative(n.save_dot_prod) * e
 	for i := range n.weights {
-		n.wt_update[i] += n.delta * n.learning_rate * inputs[i]
+		n.wt_update[i] += n.delta * inputs[i]
 	}
-	n.bias_update = n.delta * n.learning_rate
+	n.bias_update = n.delta
 }
 
 func (n *Neuron) UpdateWeights() float64 {
 	total := 0.0
 	for i, change := range n.wt_update {
-		n.weights[i] += change
+		change *= n.learning_rate
+		n.weights[i] -= change
 		total += math.Abs(change)
 		n.wt_update[i] = 0.0
 	}
@@ -209,18 +211,20 @@ func (nn *Network) UpdateWeights() float64 {
 }
 
 func (nn *Network) TrainOneData(input []float64, expect []float64) float64 {
-	actual := nn.Forward(input)
+	predict := nn.Forward(input)
+
 	num_outputs := len(expect)
 	e := make([]float64, num_outputs)
 	total_error := 0.0
 	for i := range num_outputs {
-		e[i] = expect[i] - actual[i]
-		total_error += math.Abs(e[i])
+		e[i] = predict[i] - expect[i]
+		total_error += e[i] * e[i]
 	}
 
 	nn.BackProp(e)
 	return total_error
 }
+
 func (nn Network) String() string {
 	rv := ""
 	for i, x := range nn.layers {

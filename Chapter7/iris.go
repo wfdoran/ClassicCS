@@ -89,14 +89,13 @@ func main() {
 		irus_data = append(irus_data, nn_d)
 	}
 
+	nnet := nn.NewNetwork(num_features, 6, 6, num_classes)
+	nnet.Train(irus_data, 10000, 25)
+
 	for _, d := range irus_data {
-		fmt.Println(d)
+		model := nnet.Forward(d.Input)
+		fmt.Printf("%8.4f %8.4f %8.4f | %8.4f %8.4f %8.4f\n",
+			d.Output[0], d.Output[1], d.Output[2],
+			model[0], model[1], model[2])
 	}
-
-	nnet := nn.NewNetwork(num_features, 6, num_classes)
-	nnet.Train(irus_data, 100)
-
-	// learning_rate := 1.0
-	// nn := nn.NewNetwork(num_features, learning_rate, []int{5, num_classes})
-	// nn.Train(nn_data, 2)
 }
