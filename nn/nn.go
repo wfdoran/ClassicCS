@@ -32,7 +32,6 @@ type Neuron struct {
         update_count  int
 	bias          float64
 	bias_update   float64
-	learning_rate float64
 	save_dot_prod float64
 	delta         float64
 
@@ -47,7 +46,6 @@ func NewNeuron(num_inputs int) *Neuron {
                 update_count:  0,
 		bias:          -1.0 + 2.0*rand.Float64(),
 		bias_update:   0.0,
-		learning_rate: 0.5,
 		save_dot_prod: 0.0,
 		delta:         0.0,
 
@@ -87,14 +85,14 @@ func (n *Neuron) BackProp(e float64, inputs []float64) {
 	n.bias_update = n.delta
 }
 
-func (n *Neuron) UpdateWeights() float64 {
+func (n *Neuron) UpdateWeights(learning_rate float64) float64 {
         if n.update_count == 0 {
            return 0.0
         }
 	total := 0.0
 	for i, change := range n.wt_update {
                 change /= float64(n.update_count)
-		change *= n.learning_rate
+		change *= learning_rate
 		n.weights[i] -= change
 		total += math.Abs(change)
 		n.wt_update[i] = 0.0
@@ -152,10 +150,10 @@ func (x *Layer) BackProp(e []float64) []float64 {
 	return back
 }
 
-func (x *Layer) UpdateWeights() float64 {
+func (x *Layer) UpdateWeights(learning_rate float64) float64 {
 	total := 0.0
 	for _, n := range x.neurons {
-		total += n.UpdateWeights()
+		total += n.UpdateWeights(learning_rate)
 	}
 	return total
 }
@@ -209,10 +207,10 @@ func (nn *Network) BackProp(e []float64) {
 	}
 }
 
-func (nn *Network) UpdateWeights() float64 {
+func (nn *Network) UpdateWeights(learning_rate float64) float64 {
 	total := 0.0
 	for _, x := range nn.layers {
-		total += x.UpdateWeights()
+		total += x.UpdateWeights(learning_rate)
 	}
 	return total
 }
@@ -266,6 +264,7 @@ type NNData struct {
 }
 
 func (nn *Network) Train(data []NNData, num_epochs int, update_freq int) {
+        learning_rate := 0.5
 	for epoch := range num_epochs {
 		total_error := 0.0
 		change := 0.0
@@ -276,10 +275,10 @@ func (nn *Network) Train(data []NNData, num_epochs int, update_freq int) {
 			total_error += nn.TrainOneData(data[idx].Input, data[idx].Output)
 			idx = (idx + idx_step) % num_data
 			if i%update_freq == update_freq-1 {
-				change += nn.UpdateWeights()
+				change += nn.UpdateWeights(learning_rate)
 			}
 		}
-		change += nn.UpdateWeights()
+		change += nn.UpdateWeights(learning_rate)
 		fmt.Printf("%5d %20.10f %20.10f\n", epoch, total_error, change)
 	}
 }
