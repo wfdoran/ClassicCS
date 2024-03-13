@@ -29,6 +29,7 @@ type ActivationFunc func(float64) float64
 type Neuron struct {
 	weights       []float64
 	wt_update     []float64
+        update_count  int
 	bias          float64
 	bias_update   float64
 	learning_rate float64
@@ -43,6 +44,7 @@ func NewNeuron(num_inputs int) *Neuron {
 	n := Neuron{
 		weights:   make([]float64, num_inputs),
 		wt_update: make([]float64, num_inputs),
+                update_count:  0,
 		bias:          -1.0 + 2.0*rand.Float64(),
 		bias_update:   0.0,
 		learning_rate: 0.5,
@@ -81,17 +83,23 @@ func (n *Neuron) BackProp(e float64, inputs []float64) {
 	for i := range n.weights {
 		n.wt_update[i] += n.delta * inputs[i]
 	}
+        n.update_count++
 	n.bias_update = n.delta
 }
 
 func (n *Neuron) UpdateWeights() float64 {
+        if n.update_count == 0 {
+           return 0.0
+        }
 	total := 0.0
 	for i, change := range n.wt_update {
+                change /= float64(n.update_count)
 		change *= n.learning_rate
 		n.weights[i] -= change
 		total += math.Abs(change)
 		n.wt_update[i] = 0.0
 	}
+        n.update_count = 0
 	n.bias -= n.bias_update
 	total += math.Abs(n.bias_update)
 	n.bias_update = 0.0
